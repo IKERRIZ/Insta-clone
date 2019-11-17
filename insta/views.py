@@ -14,9 +14,7 @@ def home(request):
     return render(request,'home.html',{"all_images":all_images,"user":current_user})
 
 
-@login_required(login_url='accounts/logi    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
-    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
-n/')
+@login_required(login_url='accounts/login/')
 def add_image(request):
     current_user = request.user
     if request.method == 'POST':
@@ -69,4 +67,4 @@ def search(request):
 
         return render(request,'results.html', {'results': results,"profiles":profiles})
 
-    return redirect(home
+    return redirect(home)

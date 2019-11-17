@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from pyuploadcare.dj.models import ImageField
-
+from friendship.models import Friend,Follow,Block
 
 # Create your models here.
 class Profile(models.Model):
@@ -33,8 +33,8 @@ class Image(models.Model):
     pic=ImageField(manual_crop='1080x800')
     name= models.CharField(max_length=55)
     caption = models.TextField(blank=True)
-    likes=models.BooleanField(default=False)
-    profile= models.ForeignKey(User, on_delete=models.CASCADE)
+    likes=models.BooleanField(default=None)
+    profile= models.ForeignKey(User, on_delete=models.CASCADE,default=None)
 
     def __str__(self):
         return str(self.name)
@@ -51,8 +51,8 @@ class Image(models.Model):
         return images
 
 class Comment(models.Model):
-    image = models.ForeignKey(Image)
-    comment_owner = models.ForeignKey(User)
+    image = models.ForeignKey(Image,default=None)
+    comment_owner = models.ForeignKey(User,default=None)
     comment= models.TextField()
 
     def save_comment(self):
@@ -62,4 +62,4 @@ class Comment(models.Model):
         self.delete()
 
     def __str__(self):
-        return str(self.comment_owner.belongs_to)
+        return str(self.comment_owner.username)

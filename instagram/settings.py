@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'insta',
+    'pyuploadcare.dj',
     'bootstrap3',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -123,3 +124,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+UPLOADCARE = {
+    'pub_key':'1618a59701605c21567c',
+    'secret':'ea48d1da5cc3d63f85fe'
+}

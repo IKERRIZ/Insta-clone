@@ -14,17 +14,18 @@ def home(request):
     return render(request,'home.html',{"all_images":all_images,"user":current_user})
 
 
-@login_required(login_url='accounts/login/')
+@login_required(login_url='accounts/logi    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
+    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
+n/')
 def add_image(request):
     current_user = request.user
-    creater = Profile.objects.get(belongs_to=current_user)
     if request.method == 'POST':
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
-            add = form.save()
-            add.profile = creater
+            add=form.save(commit=False)
+            add.profile = current_user
             add.save()
-            print(add)
+        
             return redirect('home')
     else:
         form = ImageForm()
@@ -36,22 +37,36 @@ def add_image(request):
 @login_required(login_url='/login')
 def profile(request):
     current_user = request.user
-    user = User.objects.get(id=current_user.id)
-    if current_user.is_authenticated() and current_user.id == user.id:
-        if request.method == 'POST':
-            profile_form = ProfileForm(request.POST,request.FILES)
-            if profile_form.is_valid():
-               profile.user = current_user
-               print(profile)
-               profile_form.save()
-        else:
-            profile_form=ProfileForm()
-
-    return render(request, 'profile/new.html', {'profile_form':profile_form,'profile':profile})
+    profile_details = Profile.objects.get(owner_id=current_user)
+    if request.method == 'POST':
+        form = ProfileForm(request.POST,request.FILES)
+        if form.is_valid():
+            profile =form.save(commit=False)
+            profile.owner = current_user
+            profile.save()
+    else:
+        form=ProfileForm()
+    return render(request, 'profile/new.html', {'form':form})
 
 @login_required(login_url='/accounts/login/')
-def display_profile(request, profile_id):
-    profile_details = Profile.objects.filter(belongs_to_id=profile_id).all()
-    print(profile_details)
+def display_profile(request, id):
+    seekuser=User.objects.filter(id=id).first()
+    profile = seekuser.profile
+    profile_details = Profile.get_by_id(id)
+    images = Image.get_profile_images(id)
+    # print(images)
+    print(profile.owner.id)
+    print(request.user.id)
 
-    return render(request,'profile/profile.html',{"profile":profile_details}) 
+    return render(request,'profile/profile.html',{"profile_details":profile_details,"profile":profile,"images":images}) 
+def search(request):
+    profiles = User.objects.all()
+
+    if 'username' in request.GET and request.GET['username']:
+        search_term = request.GET.get('username')
+        results = User.objects.filter(username__icontains=search_term)
+        print(results)
+
+        return render(request,'results.html', {'results': results,"profiles":profiles})
+
+    return redirect(home

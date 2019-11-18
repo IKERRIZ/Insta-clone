@@ -3,15 +3,15 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from friendship.exceptions import AlreadyExistsError
-from .models import Image, Profile,Comment,Follow
+from .models import Image, Profile,Comment,Follow,Likes
 from .forms import ProfileForm,ImageForm,CommentForm
 
 # Create your views here.
-@login_required(login_url='/account/login/')
+@login_required(login_url='/accounts/login/')
 def home(request):
     current_user = request.user
     all_images = Image.objects.all()
-    comments = Comment.objects.all()
+    comments = Comment.objects.all() 
     likes = Likes.objects.all
     profile = Profile.objects.all()
     print(likes)
@@ -33,13 +33,12 @@ def add_image(request):
         form = ImageForm()
 
 
-    return render(request,'image.html',local())
+    return render(request,'image.html',locals())
 
 
 @login_required(login_url='/login')
 def profile(request):
     current_user = request.user
-    # profile_details = Profile.objects.get(owner_id=current_user)
     if request.method == 'POST':
         form = ProfileForm(request.POST,request.FILES)
         if form.is_valid():
@@ -48,7 +47,7 @@ def profile(request):
             profile.save()
     else:
         form=ProfileForm()
-    return render(request, 'profile/new.html', local())
+    return render(request, 'profile/new.html', locals())
 
 @login_required(login_url='/accounts/login/')
 def display_profile(request, id):
@@ -57,15 +56,16 @@ def display_profile(request, id):
     profile_details = Profile.get_by_id(id)
     images = Image.get_profile_images(id)
 
-    # print(images)
-    users = User.objects.get(username=id)
-    follow = len(Follow.objects.followers(users))
-    following = len(Follow.objects.following(users))
+    usersss = User.objects.get(username=id)
+    follow = len(Follow.objects.followers(usersss))
+    following = len(Follow.objects.following(usersss))
     people=User.objects.all()
     pip_following=Follow.objects.following(request.user)
-    print(pip_following)
-    print(people)
+    
+
+
     return render(request,'profile/profile.html',locals()) 
+
 def search(request):
     profiles = User.objects.all()
 
@@ -102,6 +102,15 @@ def comment(request,image_id):
     return render(request, 'comment.html',locals()) 
 
 def follow(request,user_id):
-    other_user=User.objects.get(id=user_id)
-    Follow.objects.add_follower(request.user, other_user)
-    redirect(profile)
+    users=User.objects.get(id=user_id)
+    follow = Follow.objects.add_follower(request.user, users)
+
+    return redirect('/profile/', locals())
+
+def like(request, image_id):
+    current_user = request.user
+    image=Image.objects.get(id=image_id)
+    new_like,created= Likes.objects.get_or_create(liker=current_user, image=image)
+    new_like.save()
+
+    return redirect('home')

@@ -53,7 +53,7 @@ class Image(models.Model):
 
 class Comment(models.Model):
     image = models.ForeignKey(Image,on_delete=models.CASCADE,related_name='comment')
-    comment_owner = models.ForeignKey(Profile)
+    comment_owner = models.ForeignKey(User, blank=True)
     comment= models.TextField()
 
     def save_comment(self):
@@ -71,9 +71,9 @@ class Comment(models.Model):
         return str(self.comment)
 
 class Likes(models.Model):
-    liker=models.ForeignKey(User)
-    image =models.ForeignKey(Image)
+    
+    image =models.ForeignKey(User)
+    like = models.BooleanField(Image)
 
 
-    def __str__(self):
-        return self.image
+    

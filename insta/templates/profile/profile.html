@@ -14,7 +14,7 @@
                     style="overflow:hidden; -webkit-border-radius:50px; -moz-border-radius:50px; border-radius:50px; width:90px;height:90px;">
                     {% if profile_details.profile_pic %}
                     <img class="img-rounded" src="{{profile_details.profile_pic.cdn_url}}" alt="photo">
-                    {% else %}
+                    python manage.py createsuperuser               {% else %}
                     <img class="img-rounded" src=" {% static 'img/avi.jpeg' %}">
                     {% endif %}
                 </div>
@@ -65,7 +65,7 @@
         {% for image in images %}
         <div class="col-md-4">
             <h3 class="card-title">
-                <{{image.caption}}</h3> <div class="card" style="width: auto">
+                {{image.caption}}</h3> <div class="card" style="width: auto">
                     <img src="{{image.pic.cdn_url}}" alt="Image" class="card-img-top">
 
         </div>

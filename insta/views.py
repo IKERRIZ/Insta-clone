@@ -1,17 +1,21 @@
+from django.http import Http404
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import Image, Profile,Comment,Follow,Friend
-from .forms import ProfileForm,ImageForm,COmmentForm
-from friendship.models import FriendshipRequest
+from friendship.exceptions import AlreadyExistsError
+from .models import Image, Profile,Comment,Follow
+from .forms import ProfileForm,ImageForm,CommentForm
 
 # Create your views here.
 @login_required(login_url='/account/login/')
 def home(request):
     current_user = request.user
     all_images = Image.objects.all()
-    
-    return render(request,'home.html',{"all_images":all_images,"user":current_user})
+    comments = Comment.objects.all()
+    likes = Likes.objects.all
+    profile = Profile.objects.all()
+    print(likes)
+    return render(request,'home.html',locals())
 
 
 @login_required(login_url='accounts/login/')
@@ -29,13 +33,13 @@ def add_image(request):
         form = ImageForm()
 
 
-    return render(request,'image.html',{"form":form})
+    return render(request,'image.html',local())
 
 
 @login_required(login_url='/login')
 def profile(request):
     current_user = request.user
-    profile_details = Profile.objects.get(owner_id=current_user)
+    # profile_details = Profile.objects.get(owner_id=current_user)
     if request.method == 'POST':
         form = ProfileForm(request.POST,request.FILES)
         if form.is_valid():
@@ -44,19 +48,24 @@ def profile(request):
             profile.save()
     else:
         form=ProfileForm()
-    return render(request, 'profile/new.html', {'form':form})
+    return render(request, 'profile/new.html', local())
 
 @login_required(login_url='/accounts/login/')
 def display_profile(request, id):
     seekuser=User.objects.filter(id=id).first()
     profile = seekuser.profile
-    follow=Follow.objects.add_follower(request.user,followee=seekuser)
     profile_details = Profile.get_by_id(id)
     images = Image.get_profile_images(id)
+
     # print(images)
-    print(profile.owner.id)
-    print(request.user.id)
-    return render(request,'profile/profile.html',{"profile_details":profile_details,"profile":profile,"images":images,"follow":follow}}) 
+    users = User.objects.get(username=id)
+    follow = len(Follow.objects.followers(users))
+    following = len(Follow.objects.following(users))
+    people=User.objects.all()
+    pip_following=Follow.objects.following(request.user)
+    print(pip_following)
+    print(people)
+    return render(request,'profile/profile.html',locals()) 
 def search(request):
     profiles = User.objects.all()
 
@@ -65,35 +74,34 @@ def search(request):
         results = User.objects.filter(username__icontains=search_term)
         print(results)
 
-        return render(request,'results.html', {'results': results,"profiles":profiles})
+        return render(request,'results.html',locals())
 
     return redirect(home)
 
 def comment(request,image_id):
     current_user=request.user
     image = Image.objects.get(id=image_id)
-    profile_owner = Profile.objects.get(owner=current_user)
-    comments = Comment.get_comments_by_images(image_id)
+    profile_owner = User.objects.get(username=current_user)
+    comments = Comment.objects.all()
+    print(comments)
     if request.method == 'POST':
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
             comment.image = image
-            comment.comment_owner = request.user
+            comment.comment_owner = current_user
             comment.save()
-
+            
+            print(comments)
 
             return redirect(home)
 
     else:
         form = CommentForm()
 
-    return render(request, 'comment.html', {'image': image, 'form': form, 'comments': comments,"owner":profile_owner}) 
+    return render(request, 'comment.html',locals()) 
 
 def follow(request,user_id):
-    users = User.objects.get(id=user_id)
-
-    following=len(Follow.objects.following(request.user))
-    follow =len(Follow.objects.following(request.user))
-
+    other_user=User.objects.get(id=user_id)
+    Follow.objects.add_follower(request.user, other_user)
     redirect(profile)
